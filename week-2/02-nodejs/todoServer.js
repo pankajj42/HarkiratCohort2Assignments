@@ -137,6 +137,9 @@ const startApp = function () {
 	app.post("/todos", postTodo);
 	app.put("/todos/:id", updateTodo);
 	app.delete("/todos/:id", deleteTodo);
+	app.use((req, res, next) => {
+		res.status(404).send();
+	});
 	app.listen(3000);
 };
 
