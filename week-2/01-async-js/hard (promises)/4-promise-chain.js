@@ -5,31 +5,20 @@
  * Compare it with the results from 3-promise-all.js
  */
 
-function wait(t) {
-	return new Promise((resolve, reject) => {
-		if (typeof t !== "number" || t < 0) reject("Invalid Input Time");
-		else setTimeout(resolve, t * 1000);
-	});
+function wait1(t) {
+
 }
 
-// function wait2(t) {}
+function wait2(t) {
 
-// function wait3(t) {}
+}
 
-async function calculateTime(t1, t2, t3) {
-	const start = Date.now();
-	let time = 0;
-	await wait(t1)
-		.then(() => wait(t2))
-		.then(() => wait(t3))
-		.catch(() => {
-			console.log("Error In Promise Chain Execution");
-			time = -1;
-		})
-		.finally(() => {
-			time = Date.now() - start;
-		});
-	return time;
+function wait3(t) {
+
+}
+
+function calculateTime(t1, t2, t3) {
+
 }
 
 module.exports = calculateTime;
