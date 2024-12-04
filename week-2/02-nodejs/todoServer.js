@@ -39,11 +39,107 @@
 
   Testing the server - run `npm run test-todoServer` command in terminal
  */
-  const express = require('express');
-  const bodyParser = require('body-parser');
-  
-  const app = express();
-  
-  app.use(bodyParser.json());
-  
-  module.exports = app;
+const express = require("express");
+const bodyParser = require("body-parser");
+const fs = require("fs/promises");
+const app = express();
+
+app.use(bodyParser.json());
+
+let todosArray = [];
+let nextID = 0;
+const fileName = "todos.json";
+
+const initApp = async function () {
+	try {
+		const data = await fs.readFile(fileName, { encoding: "utf-8" });
+		todosArray = JSON.parse(data);
+		nextID = Math.max(...todosArray.map((obj) => Number(obj.id)));
+
+		console.log(`Data of ${todosArray.length} Todos restored from file.`);
+		console.log(`Last ID : ${nextID}`);
+	} catch (err) {
+		console.log(`ERROR : ${err.message}`);
+	}
+};
+
+const updateFile = async function () {
+	try {
+		await fs.writeFile(fileName, JSON.stringify(todosArray), "utf-8");
+	} catch (err) {
+		console.log(`ERROR : ${err.message}`);
+	}
+};
+
+const getIndexForId = function (id, res) {
+	const num = Number(id);
+	if (num === NaN) res.status(404).send(`${id} is not a number`);
+
+	const index = todosArray.map((obj) => Number(obj.id)).indexOf(num);
+
+	if (index === -1)
+		res.status(404).send(`Todo with ID=${id} does not exist!`);
+	return index;
+};
+
+const getAllTodos = function (req, res) {
+	console.log("\nRoute Get All Hit!");
+	res.json(todosArray);
+};
+
+const getTodo = function (req, res) {
+	const id = req.params.id;
+	console.log(`\nRoute Get Todo ${id} Hit!`);
+
+	const index = getIndexForId(id, res);
+	res.send(todosArray[index]);
+};
+
+const postTodo = function (req, res) {
+	console.log("\nRoute Post Hit!");
+	const todo = {
+		id: ++nextID,
+		title: req.body.title ?? "",
+		description: req.body.description ?? "",
+		completed: req.body.completed ?? false,
+	};
+	todosArray.push(todo);
+	updateFile().then(res.status(201).json(`{id:${nextID}}`));
+};
+
+const updateTodo = function (req, res) {
+	const id = req.params.id;
+	console.log(`\nRoute Put Todo ${id} Hit!`);
+
+	const index = getIndexForId(id, res);
+
+	if (req.body.title) todosArray[index].title = req.body.title;
+	if (req.body.description)
+		todosArray[index].description = req.body.description;
+	if (req.body.completed !== undefined)
+		todosArray[index].completed = req.body.completed;
+
+	updateFile().then(res.status(200).send());
+};
+
+const deleteTodo = function (req, res) {
+	const id = req.params.id;
+	console.log(`\nRoute Delete Todo ${id} Hit!`);
+
+	const index = getIndexForId(id, res);
+	todosArray.splice(index, 1);
+	updateFile().then(res.status(200).send());
+};
+
+const startApp = function () {
+	app.get("/todos", getAllTodos);
+	app.get("/todos/:id", getTodo);
+	app.post("/todos", postTodo);
+	app.put("/todos/:id", updateTodo);
+	app.delete("/todos/:id", deleteTodo);
+	app.listen(3000);
+};
+
+initApp().then(startApp());
+
+module.exports = app;
