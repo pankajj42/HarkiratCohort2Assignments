@@ -4,20 +4,29 @@
  * Return a promise.all which return the time in milliseconds it takes to complete the entire operation.
  */
 
-function wait1(t) {
-
+function wait(t) {
+	return new Promise((resolve, reject) => {
+		if (typeof t !== "number" || t < 0) reject("Invalid Input Time");
+		else setTimeout(resolve, t * 1000);
+	});
 }
 
-function wait2(t) {
+// function wait2(t) {}
 
-}
+// function wait3(t) {}
 
-function wait3(t) {
-
-}
-
-function calculateTime(t1, t2, t3) {
-
+async function calculateTime(t1, t2, t3) {
+	const start = Date.now();
+	let time = 0;
+	await Promise.all([wait(t1), wait(t2), wait(t3)])
+		.catch(() => {
+			console.log("Error in Promise.all Reolution");
+			time = -1;
+		})
+		.finally(() => {
+			time = Date.now() - start;
+		});
+	return time;
 }
 
 module.exports = calculateTime;

@@ -5,6 +5,11 @@
  */
 
 function sleep(milliseconds) {
+	return new Promise((resolve, reject) => {
+		if (typeof milliseconds !== "number" || milliseconds < 0)
+			reject("Invalid Input Time");
+		else setTimeout(resolve, milliseconds);
+	});
 }
 
 module.exports = sleep;
